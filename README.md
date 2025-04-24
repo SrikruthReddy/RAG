@@ -120,6 +120,11 @@ The backend uses Supabase for vector storage. You'll need to:
 
 For local development, simply open the `frontend/index.html` file in your browser or use a local development server.
 
+### Quick Start
+
+1. Run the backend
+2. Open html from the frontend
+
 ## How It Works
 
 1. Upload your PDF files
@@ -129,4 +134,4 @@ For local development, simply open the `frontend/index.html` file in your browse
 
 ## License
 
-MIT 
+MIT
