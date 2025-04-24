@@ -1,71 +1,73 @@
+// Get the API URL based on the current environment
+const getApiUrl = () => {
+    // If running on Vercel, use relative URLs
+    if (window.location.hostname.includes('vercel.app')) {
+        return '';  // Empty string means use relative URLs (same domain)
+    }
+    // If running on GitHub Pages
+    else if (window.location.hostname.includes('github.io')) {
+        return 'https://rag-iota-jade.vercel.app';  // Your actual Vercel deployment URL
+    }
+    // Local development
+    return 'http://localhost:8000';
+};
+
+const API_URL = getApiUrl();
+
+// File upload handler
 document.getElementById('upload-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const files = document.getElementById('pdf-files').files;
     if (!files.length) return;
+    
+    document.getElementById('results').innerText = 'Uploading files...';
+    
     const formData = new FormData();
     for (let i = 0; i < files.length; i++) {
         formData.append('pdfs', files[i]);
     }
     
-    // Try Replit backend first, then fallback to local
-    const backends = [
-        'https://rag-backend.yourusername.repl.co',  // Update with your actual Replit URL
-        'http://localhost:8000'
-    ];
-    
-    let uploaded = false;
-    for (const backendUrl of backends) {
-        try {
-            const res = await fetch(`${backendUrl}/upload`, {
-                method: 'POST',
-                body: formData
-            });
-            if (res.ok) {
-                const data = await res.json();
-                document.getElementById('results').innerText = data.message || 'Upload complete.';
-                uploaded = true;
-                break;
-            }
-        } catch (err) {
-            console.log(`Failed to upload to ${backendUrl}:`, err);
+    try {
+        const res = await fetch(`${API_URL}/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!res.ok) {
+            throw new Error(`Server responded with status: ${res.status}`);
         }
-    }
-    
-    if (!uploaded) {
-        document.getElementById('results').innerText = 'Failed to upload files. Backend server may be unavailable.';
+        
+        const data = await res.json();
+        document.getElementById('results').innerText = data.message || 'Upload complete.';
+    } catch (error) {
+        console.error('Upload error:', error);
+        document.getElementById('results').innerText = `Error: ${error.message}`;
     }
 });
 
+// Query handler
 document.getElementById('query-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const query = document.getElementById('query').value;
+    if (!query.trim()) return;
     
-    // Try Replit backend first, then fallback to local
-    const backends = [
-        'https://rag-backend.yourusername.repl.co',  // Update with your actual Replit URL
-        'http://localhost:8000'
-    ];
+    document.getElementById('results').innerText = 'Processing query...';
     
-    let queried = false;
-    for (const backendUrl of backends) {
-        try {
-            const res = await fetch(`${backendUrl}/query`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                document.getElementById('results').innerText = data.answer || 'No answer found.';
-                queried = true;
-                break;
-            }
-        } catch (err) {
-            console.log(`Failed to query ${backendUrl}:`, err);
+    try {
+        const res = await fetch(`${API_URL}/query`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query })
+        });
+        
+        if (!res.ok) {
+            throw new Error(`Server responded with status: ${res.status}`);
         }
-    }
-    
-    if (!queried) {
-        document.getElementById('results').innerText = 'Failed to execute query. Backend server may be unavailable.';
+        
+        const data = await res.json();
+        document.getElementById('results').innerText = data.answer || 'No answer found.';
+    } catch (error) {
+        console.error('Query error:', error);
+        document.getElementById('results').innerText = `Error: ${error.message}`;
     }
 }); 
