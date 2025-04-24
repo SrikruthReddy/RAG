@@ -1,0 +1,31 @@
+run = "cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 8080"
+entrypoint = "backend/main.py"
+
+# Language configuration
+language = "python3"
+
+# Environment variables (will need to be set in Replit's Secrets UI)
+# SUPABASE_URL
+# SUPABASE_SERVICE_KEY
+# GEMINI_API_KEY
+
+[nix]
+channel = "stable-22_11"
+
+[env]
+PYTHONPATH = "$PYTHONPATH:${REPL_HOME}/"
+
+[packager]
+ignoredPackages = ["unit_tests"]
+
+[packager.features]
+enabledForHosting = true
+packageSearch = true
+guessImports = true
+
+[languages.python3]
+pattern = "**/*.py"
+syntax = "python"
+
+[languages.python3.languageServer]
+start = ["pylsp"] 

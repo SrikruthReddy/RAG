@@ -6,22 +6,66 @@ document.getElementById('upload-form').addEventListener('submit', async function
     for (let i = 0; i < files.length; i++) {
         formData.append('pdfs', files[i]);
     }
-    const res = await fetch('http://localhost:8000/upload', {
-        method: 'POST',
-        body: formData
-    });
-    const data = await res.json();
-    document.getElementById('results').innerText = data.message || 'Upload complete.';
+    
+    // Try Replit backend first, then fallback to local
+    const backends = [
+        'https://rag-backend.yourusername.repl.co',  // Update with your actual Replit URL
+        'http://localhost:8000'
+    ];
+    
+    let uploaded = false;
+    for (const backendUrl of backends) {
+        try {
+            const res = await fetch(`${backendUrl}/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('results').innerText = data.message || 'Upload complete.';
+                uploaded = true;
+                break;
+            }
+        } catch (err) {
+            console.log(`Failed to upload to ${backendUrl}:`, err);
+        }
+    }
+    
+    if (!uploaded) {
+        document.getElementById('results').innerText = 'Failed to upload files. Backend server may be unavailable.';
+    }
 });
 
 document.getElementById('query-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const query = document.getElementById('query').value;
-    const res = await fetch('http://localhost:8000/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query })
-    });
-    const data = await res.json();
-    document.getElementById('results').innerText = data.answer || 'No answer found.';
+    
+    // Try Replit backend first, then fallback to local
+    const backends = [
+        'https://rag-backend.yourusername.repl.co',  // Update with your actual Replit URL
+        'http://localhost:8000'
+    ];
+    
+    let queried = false;
+    for (const backendUrl of backends) {
+        try {
+            const res = await fetch(`${backendUrl}/query`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('results').innerText = data.answer || 'No answer found.';
+                queried = true;
+                break;
+            }
+        } catch (err) {
+            console.log(`Failed to query ${backendUrl}:`, err);
+        }
+    }
+    
+    if (!queried) {
+        document.getElementById('results').innerText = 'Failed to execute query. Backend server may be unavailable.';
+    }
 }); 
