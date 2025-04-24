@@ -193,11 +193,25 @@ async def query_api(request: Request):
 
 @app.post("/clear")
 async def clear_database():
-    """Clear all documents from the database."""
+    """Clear all documents from the database by using a query to fetch all IDs first."""
     try:
-        # Delete all rows from the documents table
-        result = supabase.table("documents").delete().execute()
-        deleted_count = len(result.data) if result.data else 0
+        # First, get all document IDs
+        result = supabase.table("documents").select("id").execute()
+        
+        if not result.data:
+            return {
+                "message": "Database is already empty.",
+                "status": "success",
+                "count": 0
+            }
+        
+        # Get the list of IDs
+        ids = [item['id'] for item in result.data]
+        
+        # Delete the documents using IN operator
+        delete_result = supabase.table("documents").delete().in_("id", ids).execute()
+        
+        deleted_count = len(ids)
         
         return {
             "message": f"Database cleared successfully. {deleted_count} documents removed.",
