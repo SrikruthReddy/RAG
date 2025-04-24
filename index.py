@@ -131,7 +131,7 @@ Answer:"""
 @app.get("/")
 async def root():
     return {
-        "message": "RAG API is running. Available endpoints: /upload, /query",
+        "message": "RAG API is running. Available endpoints: /upload, /query, /clear",
         "status": "ok"
     }
 
@@ -189,4 +189,24 @@ async def query_api(request: Request):
     
     except Exception as e:
         print(f"Unhandled error while answering query: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)}) 
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@app.post("/clear")
+async def clear_database():
+    """Clear all documents from the database."""
+    try:
+        # Delete all rows from the documents table
+        result = supabase.table("documents").delete().execute()
+        deleted_count = len(result.data) if result.data else 0
+        
+        return {
+            "message": f"Database cleared successfully. {deleted_count} documents removed.",
+            "status": "success",
+            "count": deleted_count
+        }
+    except Exception as e:
+        print(f"Error clearing database: {e}")
+        return JSONResponse(
+            status_code=500, 
+            content={"error": f"Failed to clear database: {str(e)}"}
+        ) 
