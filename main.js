@@ -1,7 +1,18 @@
-// Backend API URL - will be replaced with deployed backend URL
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'http://localhost:8000' 
-    : 'https://rag-backend.onrender.com';
+// Get the API URL based on the current environment
+const getApiUrl = () => {
+    // If running on Vercel, use relative URLs
+    if (window.location.hostname.includes('vercel.app')) {
+        return '';  // Empty string means use relative URLs (same domain)
+    }
+    // If running on GitHub Pages
+    else if (window.location.hostname.includes('github.io')) {
+        return 'https://rag-iota-jade.vercel.app';  // Your actual Vercel deployment URL
+    }
+    // Local development
+    return 'http://localhost:8000';
+};
+
+const API_URL = getApiUrl();
 
 // Check if the backend is available
 let backendAvailable = false;
@@ -33,50 +44,37 @@ document.getElementById('upload-form').addEventListener('submit', async function
     const files = document.getElementById('pdf-files').files;
     if (!files.length) return;
     
-    // If backend is available, use it
-    if (backendAvailable) {
-        document.getElementById('results').innerHTML = `<div>Uploading ${files.length} file(s)...</div>`;
-        
-        try {
-            const formData = new FormData();
-            for (let i = 0; i < files.length; i++) {
-                formData.append('pdfs', files[i]);
-            }
-            
-            const res = await fetch(`${API_URL}/upload`, {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (res.ok) {
-                const data = await res.json();
-                document.getElementById('results').innerHTML = `
-                    <div>
-                        <h3>Upload Successful</h3>
-                        <p>${data.message || 'Upload complete.'}</p>
-                    </div>
-                `;
-            } else {
-                throw new Error(`Server responded with ${res.status}`);
-            }
-        } catch (error) {
-            console.error('Upload failed:', error);
-            document.getElementById('results').innerHTML = `
-                <div class="error-message">
-                    <h3>Upload Failed</h3>
-                    <p>Error: ${error.message}</p>
-                    <p>The backend server might be unavailable.</p>
-                </div>
-            `;
+    document.getElementById('results').innerText = 'Uploading files...';
+    
+    try {
+        const formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            formData.append('pdfs', files[i]);
         }
-    } else {
-        // GitHub Pages static demo
+        
+        const res = await fetch(`${API_URL}/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!res.ok) {
+            throw new Error(`Server responded with status: ${res.status}`);
+        }
+        
+        const data = await res.json();
         document.getElementById('results').innerHTML = `
-            <div class="demo-message">
-                <h3>GitHub Pages Demo Mode</h3>
-                <p>This is a static demo hosted on GitHub Pages.</p>
-                <p>Full functionality requires the backend server which handles PDF processing.</p>
-                <p>File upload simulation complete for ${files.length} file(s).</p>
+            <div>
+                <h3>Upload Successful</h3>
+                <p>${data.message || 'Upload complete.'}</p>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Upload error:', error);
+        document.getElementById('results').innerHTML = `
+            <div class="error-message">
+                <h3>Upload Failed</h3>
+                <p>Error: ${error.message}</p>
+                <p>The backend server might be unavailable.</p>
             </div>
         `;
     }
@@ -86,54 +84,36 @@ document.getElementById('upload-form').addEventListener('submit', async function
 document.getElementById('query-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const query = document.getElementById('query').value;
+    if (!query.trim()) return;
     
-    // If backend is available, use it
-    if (backendAvailable) {
-        document.getElementById('results').innerHTML = `<div>Processing query...</div>`;
+    document.getElementById('results').innerText = 'Processing query...';
+    
+    try {
+        const res = await fetch(`${API_URL}/query`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query })
+        });
         
-        try {
-            const res = await fetch(`${API_URL}/query`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
-            });
-            
-            if (res.ok) {
-                const data = await res.json();
-                document.getElementById('results').innerHTML = `
-                    <div>
-                        <h3>Query Results</h3>
-                        <p class="query-text">Query: "${query}"</p>
-                        <div class="answer">${data.answer || 'No answer found.'}</div>
-                    </div>
-                `;
-            } else {
-                throw new Error(`Server responded with ${res.status}`);
-            }
-        } catch (error) {
-            console.error('Query failed:', error);
-            document.getElementById('results').innerHTML = `
-                <div class="error-message">
-                    <h3>Query Failed</h3>
-                    <p>Error: ${error.message}</p>
-                    <p>The backend server might be unavailable.</p>
-                </div>
-            `;
+        if (!res.ok) {
+            throw new Error(`Server responded with status: ${res.status}`);
         }
-    } else {
-        // GitHub Pages static demo
+        
+        const data = await res.json();
         document.getElementById('results').innerHTML = `
-            <div class="demo-message">
-                <h3>GitHub Pages Demo Mode</h3>
-                <p>This is a static demo hosted on GitHub Pages.</p>
-                <p>Query: "${query}"</p>
-                <p>In the full version, this would return relevant information from your uploaded PDFs using RAG technology.</p>
-                <p>To use the complete functionality:</p>
-                <ol>
-                    <li>Clone the repository: <code>git clone https://github.com/SrikruthReddy/RAG.git</code></li>
-                    <li>Set up the backend server following instructions in the README</li>
-                    <li>Run the application locally</li>
-                </ol>
+            <div>
+                <h3>Query Results</h3>
+                <p class="query-text">Query: "${query}"</p>
+                <div class="answer">${data.answer || 'No answer found.'}</div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Query error:', error);
+        document.getElementById('results').innerHTML = `
+            <div class="error-message">
+                <h3>Query Failed</h3>
+                <p>Error: ${error.message}</p>
+                <p>The backend server might be unavailable or you may need to wait for it to wake up from sleep mode (free tier limitation).</p>
             </div>
         `;
     }
