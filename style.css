@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6fa;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 32px 24px;
+    border-radius: 10px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+}
+h1 {
+    text-align: center;
+    color: #2d3748;
+}
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+input[type="file"], input[type="text"] {
+    padding: 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+}
+button {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 10px 0;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+button:hover {
+    background: #1e40af;
+}
+#results {
+    margin-top: 24px;
+    background: #f1f5f9;
+    padding: 16px;
+    border-radius: 6px;
+    min-height: 40px;
+    color: #22223b;
+    white-space: pre-wrap;
+}
+
+.demo-message {
+    background-color: #f8f9fa;
+    border-left: 4px solid #007bff;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 4px;
+}
+
+.demo-message h3 {
+    color: #007bff;
+    margin-top: 0;
+}
+
+.demo-message code {
+    background-color: #eee;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.demo-message ol {
+    padding-left: 20px;
+}
+
+.demo-message li {
+    margin-bottom: 8px;
+} 
