@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF RAG Search</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>PDF RAG Search</h1>
+        <form id="upload-form">
+            <input type="file" id="pdf-files" name="pdfs" accept="application/pdf" multiple required />
+            <button type="submit">Upload PDFs</button>
+        </form>
+        <hr>
+        <form id="query-form">
+            <input type="text" id="query" placeholder="Type your question..." required />
+            <button type="submit">Search</button>
+        </form>
+        <div id="results"></div>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html> 
