@@ -6,7 +6,7 @@ A PDF search application that uses RAG (Retrieval-Augmented Generation) technolo
 
 A static demo is available at: https://srikruthreddy.github.io/RAG/
 
-Note: The GitHub Pages demo is a simplified version that showcases the UI. For full functionality, you need to set up the backend server.
+The frontend automatically checks if the backend is available. When available, it will use the deployed backend service to provide full functionality.
 
 ## Features
 
@@ -14,11 +14,70 @@ Note: The GitHub Pages demo is a simplified version that showcases the UI. For f
 - Query the content of PDFs with natural language
 - Get relevant answers extracted from your documents
 - Semantic search powered by embeddings
+- Backend deployment on Render with Supabase for vector storage
+
+## Deployment
+
+This application has two components:
+
+1. **Frontend**: Static site hosted on GitHub Pages
+2. **Backend**: Python FastAPI application deployed on Render
+
+### Backend Deployment (Render)
+
+The backend is configured to be deployed on Render using the `render.yaml` file. To deploy your own instance:
+
+1. Fork this repository
+2. Create a Render account at https://render.com
+3. Connect your GitHub account to Render
+4. Create a new "Blueprint" instance pointing to your forked repo
+5. Set the following environment variables:
+   - `SUPABASE_URL`: Your Supabase project URL
+   - `SUPABASE_SERVICE_KEY`: Your Supabase service key
+   - `GEMINI_API_KEY`: Your Google Gemini API key
+
+### Supabase Configuration
+
+The backend uses Supabase for vector storage. You'll need to:
+
+1. Create a Supabase account and project
+2. Create a table named `documents` with the following columns:
+   - `id`: UUID, primary key
+   - `filename`: Text
+   - `content`: Text
+   - `embedding`: Vector(768)
+3. Create a stored procedure for vector similarity search:
+   ```sql
+   CREATE OR REPLACE FUNCTION match_documents(
+     query_embedding vector(768),
+     match_count int DEFAULT 5
+   ) RETURNS TABLE (
+     id UUID,
+     filename TEXT,
+     content TEXT,
+     similarity FLOAT
+   )
+   LANGUAGE plpgsql
+   AS $$
+   BEGIN
+     RETURN QUERY
+     SELECT
+       documents.id,
+       documents.filename,
+       documents.content,
+       1 - (documents.embedding <=> query_embedding) as similarity
+     FROM documents
+     ORDER BY similarity DESC
+     LIMIT match_count;
+   END;
+   $$;
+   ```
 
 ## Project Structure
 
 - `frontend/`: HTML, CSS, and JavaScript for the user interface
 - `backend/`: Python code for the RAG pipeline
+- `render.yaml`: Configuration for Render deployment
 
 ## Local Setup
 
@@ -42,10 +101,17 @@ Note: The GitHub Pages demo is a simplified version that showcases the UI. For f
    pip install -r backend/requirements.txt
    ```
 
-3. Start the backend server:
+3. Create a `.env` file in the backend directory with your API keys:
+   ```
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_SERVICE_KEY=your_supabase_key
+   GEMINI_API_KEY=your_gemini_key
+   ```
+
+4. Start the backend server:
    ```
    cd backend
-   python app.py
+   uvicorn main:app --reload
    ```
 
    The server will start at http://localhost:8000
