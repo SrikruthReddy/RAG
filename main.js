@@ -80,6 +80,42 @@ document.getElementById('upload-form').addEventListener('submit', async function
     }
 });
 
+// Clear database handler
+document.getElementById('clear-db').addEventListener('click', async function() {
+    if (!confirm('Are you sure you want to clear the database? This will delete all uploaded documents and cannot be undone.')) {
+        return;
+    }
+    
+    document.getElementById('results').innerText = 'Clearing database...';
+    
+    try {
+        const res = await fetch(`${API_URL}/clear`, {
+            method: 'POST'
+        });
+        
+        if (!res.ok) {
+            throw new Error(`Server responded with status: ${res.status}`);
+        }
+        
+        const data = await res.json();
+        document.getElementById('results').innerHTML = `
+            <div>
+                <h3>Database Cleared</h3>
+                <p>${data.message || 'Database cleared successfully.'}</p>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Clear database error:', error);
+        document.getElementById('results').innerHTML = `
+            <div class="error-message">
+                <h3>Clear Database Failed</h3>
+                <p>Error: ${error.message}</p>
+                <p>The backend server might be unavailable.</p>
+            </div>
+        `;
+    }
+});
+
 // Handle query submission
 document.getElementById('query-form').addEventListener('submit', async function(e) {
     e.preventDefault();
